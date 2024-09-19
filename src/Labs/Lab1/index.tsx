@@ -56,10 +56,10 @@ tag to tell browsers to render the gaps.
     
         My favorite recipe:
         <ol id="wd-your-favorite-recipe">
-          <li>mapo tofu</li>
-          <li>curry rice</li>
-          <li>stir-fried yellow beef</li>
-          <li>Taiwanese Pork Rice Bowl</li>
+          <li>Sauté onions and garlic, add pork and cook until browned</li>
+          <li>mix in seasonings and water, heat for 40 minutes</li>
+          <li>reduce the sauce</li>
+          <li>serve over rice and get the delicious Taiwan Braised Pork Rice!</li>
         </ol>
 
       <h5>Unordered List Tag</h5>
