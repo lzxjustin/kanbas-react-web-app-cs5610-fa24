@@ -3,16 +3,15 @@ import Dashboard from "./Dashboard";
 import Account from "./Account";
 import KanbasNavigation from "./Navigation";
 import Courses from "./Courses";
+import "./style.css"
+import 'bootstrap/dist/css/bootstrap.min.css';
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
+
 export default function Kanbas() {
     return (
       <div id="wd-kanbas">
-        <h1>Kanbas</h1>
-        <table>
-          <tr>
-              <td valign="top">
-                <KanbasNavigation />
-              </td>
-              <td valign="top">
+              <KanbasNavigation />
+              <div className="wd-main-content-offset p-3">
                 <Routes>
                     <Route path="/" element={<Navigate to="Account" />} />
                     <Route path="/Account/*" element={<Account />} />
@@ -21,9 +20,7 @@ export default function Kanbas() {
                     <Route path="/Calendar" element={<h1>Calendar</h1>} />
                     <Route path="/Inbox" element={<h1>Inbox</h1>} />
                 </Routes>
-              </td>
-          </tr>
-        </table>
+              </div>
       </div>
   );}
   
