@@ -56,7 +56,7 @@ export default function AssignmentEditor() {
         <input id="wd-name" defaultValue= {`${assignment?.title}`} className="form-control" /><p />
         <div className="border p-3 S" >
         
-          <p>The assignment is <span className="text-danger">available online</span></p>
+          {/* <p>The assignment is <span className="text-danger">available online</span></p>
           <p>Submit alink to the landing page of your Webapplication running on Netlify.</p>
           <p>The landing page should include the following:</p>
           <ul>
@@ -66,8 +66,9 @@ export default function AssignmentEditor() {
             <li>Links to all relevant source code repositories</li>
           </ul>
 
-          The Kanbas application should include a link to navigate back to the landing page.
-        
+          The Kanbas application should include a link to navigate back to the landing page. */}
+          {assignment?.description}
+
         </div><br/>
 
 
