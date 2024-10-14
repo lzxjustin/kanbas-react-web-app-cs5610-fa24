@@ -1,20 +1,59 @@
 import React, { useState } from 'react';
 import "react-datepicker/dist/react-datepicker.css";
 import DatePicker from 'react-datepicker';
-import { FaCalendarAlt } from 'react-icons/fa';
+import { assignments }from "../../Database";
+import { useParams } from "react-router";
+import { Link } from 'react-router-dom';
+
+function convertDateString(dateString: string): string {
+  const [monthDay, time] = dateString.split(' at ');
+  const [monthName, dayStr] = monthDay.split(' ');
+  const [hoursMinutes, period] = time.split(' ');
+  
+  // Convert day from string to number
+  const day = parseInt(dayStr, 10);
+  // Map month name to month number
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const month = monthNames.indexOf(monthName) + 1;
+
+  // Handle year dynamically - assuming the current year
+  const year = new Date().getFullYear();
+
+  let [hours, minutes] = hoursMinutes.split(':') as unknown as number[];
+  hours = parseInt(hours as unknown as string, 10);
+  minutes = parseInt(minutes as unknown as string, 10);
+  console.log(hours, minutes)
+
+
+  if (time.includes("pm") && hours !== 12) {
+    hours += 12;
+  }
+  else if (time.includes("am") && hours === 12){
+    hours = 0; // Midnight case
+  }
+
+  console.log(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`)  
+  // Format to ISO string and adjust to required format
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+}
 
 
 export default function AssignmentEditor() {
     
+    const { aid } = useParams();
+    const assignment = assignments.find((assignment) => assignment._id === aid);
+    const due_date = `${assignment?.due_date}`
+    const available_date = `${assignment?.available_date}`
   
-    const [dueDate, setDueDate] = useState<Date | null>(new Date("2024-05-13T23:59"));
-    const [availableFrom, setAvailableFrom] = useState<Date | null>(new Date("2024-05-06T12:00"));
+    const [dueDate, setDueDate] = useState<Date | null>(new Date(convertDateString(due_date)));
+    const [availableFrom, setAvailableFrom] = useState<Date | null>(new Date(convertDateString(available_date)));
     const [availableUntil, setAvailableUntil] = useState<Date | null>(new Date("2024-05-27T12:00"));
 
     return (
       <div id="wd-assignments-editor">
         <label htmlFor="wd-name">Assignment Name</label><p/>
-        <input id="wd-name" defaultValue="A1" className="form-control" /><p />
+        <input id="wd-name" defaultValue= {`${assignment?.title}`} className="form-control" /><p />
         <div className="border p-3 S" >
         
           <p>The assignment is <span className="text-danger">available online</span></p>
@@ -37,7 +76,7 @@ export default function AssignmentEditor() {
           <div className="mb-3 row">
               <label htmlFor="wd-points" className="col-sm-4 col-form-label d-flex justify-content-end">Points</label>
               <div className="col-sm-8">
-                <input id="wd-points" value={100} className="form-control"/>
+                <input id="wd-points" value={`${assignment?.points}`} className="form-control"/>
               </div>
           </div>
 
@@ -129,29 +168,29 @@ export default function AssignmentEditor() {
               
               <div className="row">
                 <div className="col-6">
-                  <label htmlFor="wd-available-from"><strong>Available from</strong></label>
+                  <label htmlFor="wd-available-from"><strong>Available from</strong></label><br/>
                     <DatePicker
                       selected={availableFrom}
-                      onChange={(date: Date | null) => setDueDate(date)}
+                      onChange={(date: Date | null) => setAvailableFrom(date)}
                       showTimeSelect
                       timeFormat="HH:mm"
                       timeIntervals={15}
                       dateFormat="MMMM d, yyyy, h:mm aa"
-                      className="form-control mb-3 p-2"
+                      className="form-control mb-3 p-2 date-picker-input"
                       id="wd-available-from"
                     />
                 </div>
 
                 <div className="col-6">
-                  <label htmlFor="wd-available-until"><strong>Until</strong></label>
+                  <label htmlFor="wd-available-until"><strong>Until</strong></label><br/>
                   <DatePicker
                     selected={availableUntil}
-                    onChange={(date: Date | null) => setDueDate(date)}
+                    onChange={(date: Date | null) => setAvailableUntil(date)}
                     showTimeSelect
                     timeFormat="HH:mm"
                     timeIntervals={15}
                     dateFormat="MMMM d, yyyy, h:mm aa"
-                    className="form-control mb-3 p-2"
+                    className="form-control mb-3 p-2 date-picker-input"
                     id="wd-available-until"
                   />
                  
@@ -162,9 +201,14 @@ export default function AssignmentEditor() {
           </div>
 
           <hr/>
-          <button id="wd-save" className="btn btn-lg btn-danger me-1 float-end">save</button>
-          <button id="wd-cancel" className="btn  btn-lg btn-secondary me-1 float-end">Cancel</button>  
-        
+          <Link to={`/Kanbas/Courses/${assignment?.course}/Assignments`}
+            className="wd-editor-course-link text-decoration-none text-dark" >
+            <button id="wd-save" className="btn btn-lg btn-danger me-1 float-end">save</button>
+          </Link>
+          <Link to={`/Kanbas/Courses/${assignment?.course}/Assignments`}
+            className="wd-editor-course-link text-decoration-none text-dark" >
+            <button id="wd-cancel" className="btn  btn-lg btn-secondary me-1 float-end">Cancel</button>  
+          </Link>
         </div>
       </div>
 
