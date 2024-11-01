@@ -4,6 +4,7 @@ import DatePicker from 'react-datepicker';
 import { assignments }from "../../Database";
 import { useParams } from "react-router";
 import { Link } from 'react-router-dom';
+import { useSelector } from "react-redux";
 
 function convertDateString(dateString: string): string {
   const [monthDay, time] = dateString.split(' at ');
@@ -49,7 +50,9 @@ export default function AssignmentEditor() {
     const [dueDate, setDueDate] = useState<Date | null>(new Date(convertDateString(due_date)));
     const [availableFrom, setAvailableFrom] = useState<Date | null>(new Date(convertDateString(available_date)));
     const [availableUntil, setAvailableUntil] = useState<Date | null>(new Date("2024-05-27T12:00"));
-
+    const { currentUser } = useSelector((state: any) => state.accountReducer);
+    console.log(currentUser)
+  
     return (
       <div id="wd-assignments-editor">
         <label htmlFor="wd-name">Assignment Name</label><p/>
@@ -204,7 +207,7 @@ export default function AssignmentEditor() {
           <hr/>
           <Link to={`/Kanbas/Courses/${assignment?.course}/Assignments`}
             className="wd-editor-course-link text-decoration-none text-dark" >
-            <button id="wd-save" className="btn btn-lg btn-danger me-1 float-end">save</button>
+            <button id="wd-save" className="btn btn-lg btn-danger me-1 float-end">Save</button>
           </Link>
           <Link to={`/Kanbas/Courses/${assignment?.course}/Assignments`}
             className="wd-editor-course-link text-decoration-none text-dark" >

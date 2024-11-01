@@ -7,11 +7,15 @@ import{ MdAssignment } from 'react-icons/md'
 import { FaSearch } from "react-icons/fa";
 import * as db from "../../Database";
 import { useParams } from "react-router";
+import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
+
 export default function Assignments() {
     const { cid } = useParams();
-
     const assignments = db.assignments;
-    
+    // const { currentUser } = useSelector((state: any) => state.accountReducer);
+    // console.log(currentUser )
+
     return (
       <div id="wd-assignments">
 
@@ -27,10 +31,11 @@ export default function Assignments() {
 
 
           <div className="col-6">
-            <button id="wd-add-module-btn" className="btn btn-lg btn-danger me-1 float-end">
-              <FaPlus className="position-relative me-2" style={{ bottom: "1px" }} />
-              Assignment</button>
-
+            <Link to={`/Kanbas/Courses/${cid}/Assignments/`}>
+              <button id="wd-add-module-btn" className="btn btn-lg btn-danger me-1 float-end">
+                <FaPlus className="position-relative me-2" style={{ bottom: "1px" }} />
+                Assignment</button>
+            </Link>
             <button id="wd-add-module-btn" className="btn btn-lg btn-secondary me-1 float-end">
             <FaPlus className="position-relative me-2" style={{ bottom: "1px" }} />
             Group</button>
@@ -57,11 +62,11 @@ export default function Assignments() {
                         <BsGripVertical className="me-2 text-secondary"/>
                         <MdAssignment className="text-success" />
                       </div>
-
+                      
                       <div className="col">
-                        <a href= {`#/Kanbas/Courses/${cid}/Assignments/${assignment._id}`} className="text-dark fs-5 text-decoration-none">
+                        <Link key= {`#/Kanbas/Courses/${cid}/Assignments/`} to= {`${assignment._id}`} className="text-dark fs-5 text-decoration-none">
                           <strong>{assignment.title}</strong>
-                        </a>
+                        </Link>
                         <p  style={{ margin: "0" }}><span className="text-danger"><strong> Multiple Modules </strong> </span>| <strong> Not available until </strong> {assignment.available_date} |</p>
                         <strong> Due </strong> {assignment.due_date} | {assignment.points} pts
                       </div>
