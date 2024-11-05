@@ -111,11 +111,12 @@ export default function AssignmentEditor( { assignmentName, setassignmentName,
                   setassignmentName("dummy"); 
                 }
               }} 
-        className="form-control" /><p />
+        className="form-control" 
+        readOnly={currentUser.role === "STUDENT"}/><p />
 
         <div
           className="border p-3 S"
-          contentEditable
+          contentEditable={currentUser.role !== "STUDENT"}
           suppressContentEditableWarning={true}
           onInput={(e) => {
             const newName = e.currentTarget.textContent|| "";
@@ -127,7 +128,9 @@ export default function AssignmentEditor( { assignmentName, setassignmentName,
             {
               setassignmentDesc("dummy"); 
             }
-        }}>
+        }}
+        
+        >
         
               {assignment?.description??assignmentDesc}
           
@@ -151,7 +154,8 @@ export default function AssignmentEditor( { assignmentName, setassignmentName,
                                         else {
                                           console.log("Please enter an integer between 0 and 100.");
                                         }
-                                      }} className="form-control"/>
+                                      }} className="form-control"
+                  readOnly={currentUser.role === "STUDENT"}/>
               </div>
           </div>
 

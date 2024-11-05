@@ -9,8 +9,7 @@ import PeopleTable from "./People/Table";
 import 'bootstrap/dist/css/bootstrap.min.css';
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import { useState,  useEffect, Dispatch, SetStateAction } from "react";
-import * as db from "../Database";
-import { addAssignment, editAssignment, updateAssignment, deleteAssignment } from "./Assignments/reducer";
+import { addAssignment} from "./Assignments/reducer";
 import { useDispatch } from "react-redux";
 // import { courses } from "../Database";
 
@@ -26,9 +25,6 @@ export default function Courses({ courses }: { courses: any[]; }) {
     const [assignmentAvaf, setassignmentAvaf] = useState("Jan 10 at 12:00am");
     const [assignmentAvaU, setassignmentAvaU] = useState("Jan 10 at 12:00am");
     const dispatch = useDispatch()
-
-
-    
     
     return (
         <div id="wd-courses">

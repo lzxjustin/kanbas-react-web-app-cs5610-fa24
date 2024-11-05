@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
 import React, { useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import * as db from "./Database";
+import { addEnroll, deleteEnroll } from "./Courses/People/reducer";
 
 export default function Dashboard({ courses, course, setCourse, addNewCourse,deleteCourse, updateCourse}: {
   courses: any[]; 
@@ -12,14 +13,14 @@ export default function Dashboard({ courses, course, setCourse, addNewCourse,del
   updateCourse: () => void; })
   {
   const { currentUser } = useSelector((state: any) => state.accountReducer);
-  const { enrollments } = db;
+  const { enrollments } = useSelector((state: any) => state.enrollmentReducer);
   const [all, setAll] = useState(false);
   
   function reverse() {
     setAll((prevAll) => !prevAll);
   }
-
-  console.log(all)
+  const dispatch = useDispatch()
+  console.log(enrollments)
 
   return (
     <div id="wd-dashboard">
@@ -68,7 +69,7 @@ export default function Dashboard({ courses, course, setCourse, addNewCourse,del
         <div className="row row-cols-1 row-cols-md-5 g-4">
           {(all ? courses : courses.filter((course) =>
           enrollments.some(
-            (enrollment) =>
+            (enrollment: { user: any; course: any; }) =>
               enrollment.user === currentUser._id &&
               enrollment.course === course._id
              )))
@@ -77,15 +78,26 @@ export default function Dashboard({ courses, course, setCourse, addNewCourse,del
             
             <div className="wd-dashboard-course col" style={{ width: "300px" }}>
               <div className="card rounded-3 overflow-hidden">
-                <Link to={`/Kanbas/Courses/${course._id}/Home`}
-                      className="wd-dashboard-course-link text-decoration-none text-dark" >
+                
                   <img src={`/images/${course.figure}`} width="100%" height={160} />
                   <div className="card-body">
                     <h5 className="wd-dashboard-course-title card-title">
                       {course.name} </h5>
                     <p className="wd-dashboard-course-title card-text overflow-y-hidden" style={{ maxHeight: 100 }}>
                       {course.description} </p>
-                    <button className="btn btn-primary"> Go </button>
+                    
+                    {enrollments.some(
+                                (enrollment: { user: any; course: any; }) =>
+                                  enrollment.user === currentUser._id &&
+                                  enrollment.course === course._id
+                              ) && (
+                              <>
+                                <Link to={`/Kanbas/Courses/${course._id}/Home`}
+                                        className="wd-dashboard-course-link text-decoration-none text-dark" >  
+                                  <button className="btn btn-primary"> Go </button>
+                                </Link>
+                              </>
+                    )}
 
                     {currentUser.role === "FACULTY" && (
                       <>
@@ -107,16 +119,22 @@ export default function Dashboard({ courses, course, setCourse, addNewCourse,del
                       </button>
                       </>
                     )}
-
+                    
                     {currentUser.role === "STUDENT" && enrollments.some(
-                                (enrollment) =>
+                                (enrollment: { user: any; course: any; }) =>
                                   enrollment.user === currentUser._id &&
                                   enrollment.course === course._id
                               ) && (
                               <>
                                 <button className="btn btn-danger float-end"
                                         id="wd-enrollment"
-                                        onClick={()=>{}}
+                                        onClick={(event) => {
+                                          event.preventDefault();
+                                          dispatch(deleteEnroll(
+                                            { enrollmentId: currentUser._id, 
+                                              enrollmentcourse: course._id}));
+                                          
+                                        }}
                                 > 
                                   Unenroll
                                 </button>
@@ -124,23 +142,34 @@ export default function Dashboard({ courses, course, setCourse, addNewCourse,del
                       )}
 
                       {currentUser.role === "STUDENT" && !enrollments.some(
-                                (enrollment) =>
+                                (enrollment: { user: any; course: any; }) =>
                                   enrollment.user === currentUser._id &&
                                   enrollment.course === course._id
                               ) && (
                               <>
                                 <button className="btn btn-success float-end"
-                                        id="wd-enrollment"
-                                        onClick={()=>{}}
+                                        id="wd-enrollment-out"
+                                        style={{ marginBottom: "10px" }}
+                                        onClick={(event) => {
+                                          event.preventDefault();
+                                          dispatch(addEnroll(
+                                            {counter: String(Math.floor(Math.random() * (5000 - 10 + 1)) + 10),
+                                             user: currentUser._id, 
+                                             course:course._id}));
+                                          
+                                        }}
                                 > 
                                   enroll
                                 </button>
                             </>
                       )}
+                    
 
 
                   </div>
-                </Link>
+                
+
+                
               </div>
             </div>
           ))}
