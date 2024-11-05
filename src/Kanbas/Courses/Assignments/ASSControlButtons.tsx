@@ -1,9 +1,9 @@
 import { IoEllipsisVertical } from "react-icons/io5";
-import { FaPlus } from "react-icons/fa6";
+import { FaPlus, FaTrash } from "react-icons/fa6";
 import GreenCheckmark from "./GreenCheckmark";
 
 
-export default function AssControlButtons() {
+export default function AssControlButtons( ) {
   return (
     <div className="float-end">
         <span className="badge rounded-pill custom-pill">40% of Total</span>

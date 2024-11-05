@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import "react-datepicker/dist/react-datepicker.css";
 import DatePicker from 'react-datepicker';
-import { assignments }from "../../Database";
 import { useParams } from "react-router";
 import { Link } from 'react-router-dom';
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { format } from 'date-fns';
+import { updateAssignment } from './reducer';
 
 function convertDateString(dateString: string): string {
   const [monthDay, time] = dateString.split(' at ');
@@ -19,12 +20,13 @@ function convertDateString(dateString: string): string {
   const month = monthNames.indexOf(monthName) + 1;
 
   // Handle year dynamically - assuming the current year
-  const year = new Date().getFullYear();
+  const year = new Date().getFullYear(); 
 
   let [hours, minutes] = hoursMinutes.split(':') as unknown as number[];
   hours = parseInt(hours as unknown as string, 10);
   minutes = parseInt(minutes as unknown as string, 10);
-  console.log(hours, minutes)
+  // console.log(hours, minutes)
+
 
 
   if (time.includes("pm") && hours !== 12) {
@@ -34,44 +36,101 @@ function convertDateString(dateString: string): string {
     hours = 0; // Midnight case
   }
 
-  console.log(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`)  
+  // console.log(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`)  
   // Format to ISO string and adjust to required format
   return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 }
 
-
-export default function AssignmentEditor() {
+export default function AssignmentEditor( { assignmentName, setassignmentName, 
+                                            assignmentDesc, setassignmentDesc, 
+                                            assignmentPts, setassignmentPts,
+                                            assignmentDue, setassignmentDue,
+                                            assignmentAvaf, setassignmentAvaf,
+                                            assignmentAvaU, setassignmentAvaU,
+                                            addAssignment}:
+   {assignmentName: string; 
+    setassignmentName: (title: string) => void;
+    assignmentDesc: string; 
+    setassignmentDesc: (title: string) => void; 
+    assignmentPts: string; 
+    setassignmentPts: (title: string) => void; 
+    assignmentDue: string; 
+    setassignmentDue: (title: string) => void; 
+    assignmentAvaf: string; 
+    setassignmentAvaf: (title: string) => void; 
+    assignmentAvaU: string; 
+    setassignmentAvaU: (title: string) => void; 
+    addAssignment: () => void;}
+    ) {
     
-    const { aid } = useParams();
-    const assignment = assignments.find((assignment) => assignment._id === aid);
-    const due_date = `${assignment?.due_date}`
-    const available_date = `${assignment?.available_date}`
+    const { cid, aid } = useParams();
+    const { assignments } = useSelector((state: any) => state.assignmentReducer);
+
+    const assignment = assignments.find((assignment: { _id: string | undefined; }) => assignment._id === aid);
+
+    const due_date = `${assignment?.due_date??assignmentDue}`
+    const available_date = `${assignment?.available_date??assignmentAvaU}`
+    const from_date = `${assignment?.available_date??assignmentAvaf}`
+  
   
     const [dueDate, setDueDate] = useState<Date | null>(new Date(convertDateString(due_date)));
     const [availableFrom, setAvailableFrom] = useState<Date | null>(new Date(convertDateString(available_date)));
-    const [availableUntil, setAvailableUntil] = useState<Date | null>(new Date("2024-05-27T12:00"));
+    const [availableUntil, setAvailableUntil] = useState<Date | null>(new Date(convertDateString(from_date)));
     const { currentUser } = useSelector((state: any) => state.accountReducer);
-    console.log(currentUser)
-  
+    const dispatch = useDispatch()
+
+
+      useEffect(() => {
+        if (assignment._id !== 'TEMP') {
+            setassignmentName(assignment.title);
+            setassignmentDesc(assignment.description);
+            setassignmentPts(assignment.points);
+            setassignmentDue(assignment.due_date);
+            setassignmentAvaf(assignment.available_from);
+            setassignmentAvaU(assignment.available_date);
+          }
+       }, [assignments, setassignmentName, setassignmentDesc, setassignmentPts, setassignmentDue, setassignmentAvaf, setassignmentAvaU]);
+    
+
+    console.log({...assignment, title: assignmentName, description:assignmentDesc, points:assignmentPts, due_date:assignmentDue, available_from:assignmentAvaf, available_date:assignmentAvaU})
+
     return (
+
       <div id="wd-assignments-editor">
         <label htmlFor="wd-name">Assignment Name</label><p/>
-        <input id="wd-name" defaultValue= {`${assignment?.title}`} className="form-control" /><p />
-        <div className="border p-3 S" >
+        <input id="wd-name" defaultValue= {`${assignment?.title??assignmentName}`}
+               onChange={(e) => {
+                const newName = e.target.value;
+                console.log(newName)
+                if (newName.length > 0) 
+                {
+                   setassignmentName(newName); 
+                }
+                else
+                {
+                  setassignmentName("dummy"); 
+                }
+              }} 
+        className="form-control" /><p />
+
+        <div
+          className="border p-3 S"
+          contentEditable
+          suppressContentEditableWarning={true}
+          onInput={(e) => {
+            const newName = e.currentTarget.textContent|| "";
+            if (newName.length  > 0) 
+            {
+              setassignmentDesc(newName)
+            }
+            else
+            {
+              setassignmentDesc("dummy"); 
+            }
+        }}>
         
-          {/* <p>The assignment is <span className="text-danger">available online</span></p>
-          <p>Submit alink to the landing page of your Webapplication running on Netlify.</p>
-          <p>The landing page should include the following:</p>
-          <ul>
-            <li>Your fullname and section</li> 
-            <li>Links to each of the lab assignments </li>
-            <li>Link to the Kanbas application</li>
-            <li>Links to all relevant source code repositories</li>
-          </ul>
-
-          The Kanbas application should include a link to navigate back to the landing page. */}
-          {assignment?.description}
-
+              {assignment?.description??assignmentDesc}
+          
         </div><br/>
 
 
@@ -80,7 +139,19 @@ export default function AssignmentEditor() {
           <div className="mb-3 row">
               <label htmlFor="wd-points" className="col-sm-4 col-form-label d-flex justify-content-end">Points</label>
               <div className="col-sm-8">
-                <input id="wd-points" value={`${assignment?.points}`} className="form-control"/>
+                <input id="wd-points" defaultValue={`${assignment?.points??assignmentPts}`} 
+                                      onChange={(e) => {
+                                        const newValue = e.target.value;
+                                    
+                                        const intValue = parseInt(newValue, 10);
+
+                                        if (!isNaN(intValue) && intValue >= 0 && intValue <= 100) {
+                                          setassignmentPts(newValue); 
+                                        }
+                                        else {
+                                          console.log("Please enter an integer between 0 and 100.");
+                                        }
+                                      }} className="form-control"/>
               </div>
           </div>
 
@@ -160,7 +231,9 @@ export default function AssignmentEditor() {
                 
                 <DatePicker
                   selected={dueDate}
-                  onChange={(date: Date | null) => setDueDate(date)}
+                  onChange={(date: Date | null) => {
+                            setDueDate(date);
+                            setassignmentDue(date? format(date, "MMM d 'at' h:mma") : "")}}
                   showTimeSelect
                   timeFormat="HH:mm"
                   timeIntervals={15}
@@ -175,7 +248,9 @@ export default function AssignmentEditor() {
                   <label htmlFor="wd-available-from"><strong>Available from</strong></label><br/>
                     <DatePicker
                       selected={availableFrom}
-                      onChange={(date: Date | null) => setAvailableFrom(date)}
+                      onChange={(date: Date | null) => {
+                                setAvailableFrom(date);
+                                setassignmentAvaf(date? format(date, "MMM d 'at' h:mma") : "")}}
                       showTimeSelect
                       timeFormat="HH:mm"
                       timeIntervals={15}
@@ -189,7 +264,9 @@ export default function AssignmentEditor() {
                   <label htmlFor="wd-available-until"><strong>Until</strong></label><br/>
                   <DatePicker
                     selected={availableUntil}
-                    onChange={(date: Date | null) => setAvailableUntil(date)}
+                    onChange={(date: Date | null) => {
+                              setAvailableUntil(date);
+                              setassignmentAvaU(date? format(date, "MMM d 'at' h:mma") : "")}}
                     showTimeSelect
                     timeFormat="HH:mm"
                     timeIntervals={15}
@@ -203,19 +280,54 @@ export default function AssignmentEditor() {
                 
             </div>
           </div>
+          
+          
 
           <hr/>
-          <Link to={`/Kanbas/Courses/${assignment?.course}/Assignments`}
+          {currentUser.role === "FACULTY" && (
+          <>
+          <Link to={`/Kanbas/Courses/${cid}/Assignments`}
             className="wd-editor-course-link text-decoration-none text-dark" >
-            <button id="wd-save" className="btn btn-lg btn-danger me-1 float-end">Save</button>
+            <button onClick={() => {
+                                    if (assignment._id === 'TEMP') {
+                                      addAssignment();
+                                    } else {
+                                      dispatch(
+                                        updateAssignment({
+                                          ...assignment,
+                                          title: assignmentName,
+                                          description: assignmentDesc,
+                                          points: assignmentPts,
+                                          due_date: assignmentDue,
+                                          available_from: assignmentAvaf,
+                                          available_date: assignmentAvaU,
+                                        })
+                                      );
+                                    }
+
+                                    setassignmentName("New Assignment");
+                                    setassignmentDesc("This is a new assignment");
+                                    setassignmentPts("100");
+                                    setassignmentDue("Jan 31 at 12:00am");
+                                    setassignmentAvaf("Jan 10 at 12:00am");
+                                    setassignmentAvaU("Jan 10 at 12:00am");
+
+                                  }}
+                    id="wd-save" className="btn btn-lg btn-danger me-1 float-end">Save</button>
           </Link>
-          <Link to={`/Kanbas/Courses/${assignment?.course}/Assignments`}
+          </>
+          )}
+
+          <Link to={`/Kanbas/Courses/${cid}/Assignments`}
             className="wd-editor-course-link text-decoration-none text-dark" >
             <button id="wd-cancel" className="btn  btn-lg btn-secondary me-1 float-end">Cancel</button>  
           </Link>
+          
+
         </div>
       </div>
+    );
 
-);}
+}
   
   

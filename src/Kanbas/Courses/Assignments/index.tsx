@@ -1,4 +1,4 @@
-import { FaPlus } from "react-icons/fa6";
+import { FaPlus, FaTrash } from "react-icons/fa6";
 import { BsGripVertical } from 'react-icons/bs';
 import {BiSolidDownArrow} from 'react-icons/bi';
 import AssControlButtons from "./ASSControlButtons";
@@ -7,14 +7,19 @@ import{ MdAssignment } from 'react-icons/md'
 import { FaSearch } from "react-icons/fa";
 import * as db from "../../Database";
 import { useParams } from "react-router";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
+import { deleteAssignment } from "./reducer";
+import Assignmentdeleter from "./LessonDeleter";
+import { useState } from "react";
 
-export default function Assignments() {
+export default function Assignments({ assignmentName, setassignmentName }:
+  { assignmentName: string; setassignmentName: (title: string) => void; }) {
+
     const { cid } = useParams();
-    const assignments = db.assignments;
-    // const { currentUser } = useSelector((state: any) => state.accountReducer);
-    // console.log(currentUser )
+    const { assignments } = useSelector((state: any) => state.assignmentReducer);
+    const dispatch = useDispatch()
+    const { currentUser } = useSelector((state: any) => state.accountReducer);
 
     return (
       <div id="wd-assignments">
@@ -29,18 +34,25 @@ export default function Assignments() {
               </div>
           </div>
 
+          {currentUser.role === "FACULTY" && (
+                      <>
+                <div className="col-6">
+                      <Link key= {`#/Kanbas/Courses/${cid}/Assignments/`} to= {`TEMP`} className="text-white fs-5 text-decoration-none">
+                        <button id="wd-add-module-btn" className="btn btn-lg btn-danger me-1 float-end">
+                                <FaPlus className="position-relative me-2" style={{ bottom: "1px" }} />
+                                Assignment
+                        </button>
+                      </Link>
+                
+                  <button id="wd-add-module-btn" className="btn btn-lg btn-secondary me-1 float-end">
+                      <FaPlus className="position-relative me-2" style={{ bottom: "1px" }} />
+                        Group
+                  </button>
+                </div>
 
-          <div className="col-6">
-            <Link to={`/Kanbas/Courses/${cid}/Assignments/`}>
-              <button id="wd-add-module-btn" className="btn btn-lg btn-danger me-1 float-end">
-                <FaPlus className="position-relative me-2" style={{ bottom: "1px" }} />
-                Assignment</button>
-            </Link>
-            <button id="wd-add-module-btn" className="btn btn-lg btn-secondary me-1 float-end">
-            <FaPlus className="position-relative me-2" style={{ bottom: "1px" }} />
-            Group</button>
-          </div>
-
+              
+          </>
+          )}
         </div>
 
       
@@ -50,7 +62,7 @@ export default function Assignments() {
               <BsGripVertical className="me-2 fs-2" />
               <BiSolidDownArrow className="me-2 fs-6" />
                 <strong>ASSIGNMENTS</strong>
-              <AssControlButtons/>
+              <AssControlButtons />
             </div>
 
             {assignments
@@ -71,86 +83,27 @@ export default function Assignments() {
                         <strong> Due </strong> {assignment.due_date} | {assignment.points} pts
                       </div>
 
+                      {currentUser.role === "FACULTY" && (
+                      <>
                       <div className="col-auto">
-                        <LessonControlButtons />
+
+                        <FaTrash className="text-danger me-2 mb-1" data-bs-toggle="modal" data-bs-target="#wd-delete-assignment-dialog"/>
+                        
+                        <LessonControlButtons/>
+
+                        <Assignmentdeleter dialogTitle="Delete" 
+                                          assignmentID={assignment._id} 
+                                          deleteAssignment={(assignmentID) => {
+                                            dispatch(deleteAssignment(assignmentID))}} />
+
                       </div>
+                      </>
+                        )}
+
                   </div>
+
               </li>
             ))}
-            
-            
-            {/* <li className="wd-assignment list-group-item">
-              <div className="row d-flex align-items-center">
-                <div className="col-2 fs-2 d-flex justify-content-start align-items-center"  style={{ paddingRight: "0" }}>
-                  <BsGripVertical className="me-2"/>
-                  <MdAssignment />
-                </div>
-
-                <div className="col-7 text-start">
-                <a className="wd-assignment-link fs-3 "
-                  style={{ color: "black", textDecoration: "none" }}
-                  href="#/Kanbas/Courses/${cid}/Assignments/123">
-
-                    <strong>A1</strong>
-                  </a><br/>
-                  <p  style={{ margin: "0" }}><span className="text-danger"><strong> Multiple Modules </strong> </span>| <strong> Not available until </strong> May 6 at 12:00am |</p>
-                  <strong> Due </strong> May 13 at 11:59pm | 100 pts
-                </div> 
-
-                <div className="col-3  justify-content-end">
-                  <LessonControlButtons/>
-                </div> 
-              </div>
-            </li>
-
-            <li className="wd-assignment list-group-item p-3 ps-3">
-              <div className="row d-flex align-items-center">
-                <div className="col-2 fs-2 d-flex justify-content-start align-items-center"  style={{ margin: "0" }}>
-                  <BsGripVertical className="me-2"/>
-                  <MdAssignment />
-                </div>
-
-                <div className="col-7 text-start">
-                <a className="wd-assignment-link fs-3 "
-                  style={{ color: "black", textDecoration: "none" }}
-                  href="#/Kanbas/Courses/${cid}/Assignments/123">
-                    <strong>A2</strong>
-                  </a><br/>
-                  <p  style={{ margin: "0" }}><span className="text-danger"><strong> Multiple Modules </strong> </span>| <strong> Not available until </strong> May 13 at 12:00am |</p>
-                  <strong> Due </strong> May 20 at 11:59pm | 100 pts<br/>
-                </div> 
-
-                <div className="col-3  justify-content-end">
-                  <LessonControlButtons/>
-                </div> 
-              </div>
-            </li>
-
-            <li className="wd-assignment list-group-item p-3 ps-3">
-              
-              <div className="row d-flex align-items-center">
-                <div className="col-2 fs-2 d-flex justify-content-start align-items-center">
-                  <BsGripVertical className="me-2"/>
-                  <MdAssignment />
-                </div>
-
-                <div className="col-7 justify-content-start">
-                <a className="wd-assignment-link fs-3 "
-                  style={{ color: "black", textDecoration: "none" }}
-                  href="#/Kanbas/Courses/${cid}/Assignments/123">
-
-                    <strong>A3</strong>
-                  </a><br/>
-                  <p  style={{ margin: "0" }}><span className="text-danger"><strong> Multiple Modules </strong> </span>| <strong> Not available until </strong> May 20 at 12:00am |</p>
-                  <strong> Due </strong> May 27 at 11:59pm | 100 pts<br/>
-                </div> 
-
-                <div className="col-3  justify-content-end">
-                  <LessonControlButtons/>
-                </div> 
-              </div>
-
-            </li> */}
 
           </li>
         </ul> 
