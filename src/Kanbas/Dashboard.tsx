@@ -1,26 +1,54 @@
 import { Link } from "react-router-dom";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import * as db from "./Database";
-import { addEnroll, deleteEnroll } from "./Courses/People/reducer";
+import { addEnroll, deleteEnroll, setEnroll } from "./Courses/People/reducer";
+import * as coursesClient from "./Courses/client";
+import * as enrollmentsClient from "./Courses/People/client";
 
-export default function Dashboard({ courses, course, setCourse, addNewCourse,deleteCourse, updateCourse}: {
+export default function Dashboard({ courses, all_courses, course, setCourse, addNewCourse,deleteCourse, updateCourse}: {
   courses: any[]; 
+  all_courses: any[]; 
   course: any; 
   setCourse: (course: any) => void;
   addNewCourse: () => void; 
   deleteCourse: (course: any) => void;
-  updateCourse: () => void; })
-  {
+  updateCourse: () => void; }){
+
   const { currentUser } = useSelector((state: any) => state.accountReducer);
-  const { enrollments } = useSelector((state: any) => state.enrollmentReducer);
   const [all, setAll] = useState(false);
-  
+  const { enrollments } = useSelector((state: any) => state.enrollmentReducer);
+  const dispatch = useDispatch()
+
   function reverse() {
     setAll((prevAll) => !prevAll);
   }
-  const dispatch = useDispatch()
-  console.log(enrollments)
+
+  const fetchEnrollments = async () => {
+    const expected_enroll = await coursesClient.fetchAllEnrollments();
+    dispatch(setEnroll(expected_enroll));
+  };
+  
+  useEffect(() => {
+    fetchEnrollments();
+  }, []);
+
+  const removeEnroll = async (enroll: any) => {
+    console.log(enrollments)
+    console.log(enroll)
+    const enrollment = enrollments.find(
+      (e:any) => e.user === enroll.enrollmentId && e.course === enroll.enrollmentcourse
+    ); 
+
+    await enrollmentsClient.deleteEnroll(enrollment._id);
+    dispatch(deleteEnroll(enroll));
+  }
+  
+  const createEnroll = async (enroll: any) => {
+    await enrollmentsClient.updateEnroll(enroll);
+    console.log(enroll)
+    dispatch(addEnroll(enroll));
+  };
+
 
   return (
     <div id="wd-dashboard">
@@ -38,8 +66,6 @@ export default function Dashboard({ courses, course, setCourse, addNewCourse,del
         )}
       </h1> 
       <hr/>
-
-    
 
       {currentUser.role === "FACULTY" && (
         <>
@@ -67,13 +93,7 @@ export default function Dashboard({ courses, course, setCourse, addNewCourse,del
       <h2 id="wd-dashboard-published">Published Courses ({courses.length})</h2> <hr />
       <div id="wd-dashboard-courses" className="row">
         <div className="row row-cols-1 row-cols-md-5 g-4">
-          {(all ? courses : courses.filter((course) =>
-          enrollments.some(
-            (enrollment: { user: any; course: any; }) =>
-              enrollment.user === currentUser._id &&
-              enrollment.course === course._id
-             )))
-    
+          {(all ? all_courses : courses)
           .map((course) => (
             
             <div className="wd-dashboard-course col" style={{ width: "300px" }}>
@@ -86,18 +106,11 @@ export default function Dashboard({ courses, course, setCourse, addNewCourse,del
                     <p className="wd-dashboard-course-title card-text overflow-y-hidden" style={{ maxHeight: 100 }}>
                       {course.description} </p>
                     
-                    {enrollments.some(
-                                (enrollment: { user: any; course: any; }) =>
-                                  enrollment.user === currentUser._id &&
-                                  enrollment.course === course._id
-                              ) && (
-                              <>
-                                <Link to={`/Kanbas/Courses/${course._id}/Home`}
-                                        className="wd-dashboard-course-link text-decoration-none text-dark" >  
-                                  <button className="btn btn-primary"> Go </button>
-                                </Link>
-                              </>
-                    )}
+                      <Link to={`/Kanbas/Courses/${course._id}/Home`}
+                              className="wd-dashboard-course-link text-decoration-none text-dark" >  
+                        <button className="btn btn-primary"> Go </button>
+                      </Link>
+
 
                     {currentUser.role === "FACULTY" && (
                       <>
@@ -120,49 +133,42 @@ export default function Dashboard({ courses, course, setCourse, addNewCourse,del
                       </>
                     )}
                     
-                    {currentUser.role === "STUDENT" && enrollments.some(
-                                (enrollment: { user: any; course: any; }) =>
-                                  enrollment.user === currentUser._id &&
-                                  enrollment.course === course._id
-                              ) && (
-                              <>
-                                <button className="btn btn-danger float-end"
-                                        id="wd-enrollment"
-                                        onClick={(event) => {
-                                          event.preventDefault();
-                                          dispatch(deleteEnroll(
-                                            { enrollmentId: currentUser._id, 
-                                              enrollmentcourse: course._id}));
-                                          
-                                        }}
-                                > 
-                                  Unenroll
-                                </button>
-                            </>
-                      )}
+                    {currentUser.role === "STUDENT"  && 
+                     courses.some((c) => c._id === course._id) &&
+                    (
+                      <>
+                        <button className="btn btn-danger float-end"
+                                id="wd-enrollment"
+                                onClick={(event) => {
+                                  event.preventDefault();
+                                  removeEnroll({ enrollmentId: currentUser._id, 
+                                    enrollmentcourse: course._id});
+                                    window.location.reload();
+                                }}>
+                          Unenroll
+                        </button>
+                      </>
+                     )}
 
-                      {currentUser.role === "STUDENT" && !enrollments.some(
-                                (enrollment: { user: any; course: any; }) =>
-                                  enrollment.user === currentUser._id &&
-                                  enrollment.course === course._id
-                              ) && (
-                              <>
-                                <button className="btn btn-success float-end"
-                                        id="wd-enrollment-out"
-                                        style={{ marginBottom: "10px" }}
-                                        onClick={(event) => {
-                                          event.preventDefault();
-                                          dispatch(addEnroll(
-                                            {counter: String(Math.floor(Math.random() * (5000 - 10 + 1)) + 10),
-                                             user: currentUser._id, 
-                                             course:course._id}));
-                                          
-                                        }}
-                                > 
-                                  enroll
-                                </button>
-                            </>
-                      )}
+                    {currentUser.role === "STUDENT" &&
+                    !courses.some((c) => c._id === course._id) &&
+                    (
+                      <>
+                          <button className="btn btn-success float-end"
+                                  id="wd-enrollment-out"
+                                  style={{ marginBottom: "10px" }}
+                                  onClick={(event) => {
+                                    event.preventDefault();
+                                    createEnroll(
+                                      {_id: String(Math.floor(Math.random() * (5000 - 10 + 1)) + 10),
+                                        user: currentUser._id, 
+                                        course:course._id});
+                                        window.location.reload();
+                            }}> 
+                            Enroll
+                          </button>
+                      </>
+                    )}
                     
 
 

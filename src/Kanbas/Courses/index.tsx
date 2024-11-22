@@ -11,7 +11,8 @@ import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import { useState,  useEffect, Dispatch, SetStateAction } from "react";
 import { addAssignment} from "./Assignments/reducer";
 import { useDispatch } from "react-redux";
-// import { courses } from "../Database";
+import * as coursesClient from "./client";
+
 
 export default function Courses({ courses }: { courses: any[]; }) {
     const { cid } = useParams();
@@ -26,6 +27,16 @@ export default function Courses({ courses }: { courses: any[]; }) {
     const [assignmentAvaU, setassignmentAvaU] = useState("Jan 10 at 12:00am");
     const dispatch = useDispatch()
     
+    const createAssignmentForCourse = async () => {
+      if (!cid) return;
+      const newAssignment = { title: assignmentName, course: cid, description:assignmentDesc, points:assignmentPts, due_date:assignmentDue, available_date:assignmentAvaf, until:assignmentAvaU };
+      const assignment = await coursesClient.createAssignmentForCourse(cid, newAssignment);
+      console.log(assignment)
+      dispatch(addAssignment(assignment));
+    };
+  
+
+
     return (
         <div id="wd-courses">
         <h2 className="text-danger">
@@ -58,10 +69,7 @@ export default function Courses({ courses }: { courses: any[]; }) {
                             setassignmentAvaU = {setassignmentAvaU} 
                             assignmentAvaf = {assignmentAvaf}
                             setassignmentAvaf = {setassignmentAvaf} 
-                            addAssignment = {() => {
-                              dispatch(addAssignment({name: assignmentName, course: cid, desc:assignmentDesc, points:assignmentPts, due:assignmentDue, from:assignmentAvaf, until:assignmentAvaU}));
-                              
-                            }}
+                            addAssignment = {createAssignmentForCourse}
                             
                              />} />
                     <Route path="People" element={<PeopleTable />} />

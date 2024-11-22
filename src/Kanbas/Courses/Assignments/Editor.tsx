@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { useSelector, useDispatch } from "react-redux";
 import { format } from 'date-fns';
 import { updateAssignment } from './reducer';
+import * as assignmentsClient from './client';
 
 function convertDateString(dateString: string): string {
   const [monthDay, time] = dateString.split(' at ');
@@ -62,35 +63,38 @@ export default function AssignmentEditor( { assignmentName, setassignmentName,
     setassignmentAvaU: (title: string) => void; 
     addAssignment: () => void;}
     ) {
-    
+
     const { cid, aid } = useParams();
     const { assignments } = useSelector((state: any) => state.assignmentReducer);
-
     const assignment = assignments.find((assignment: { _id: string | undefined; }) => assignment._id === aid);
 
     const due_date = `${assignment?.due_date??assignmentDue}`
     const available_date = `${assignment?.available_date??assignmentAvaU}`
     const from_date = `${assignment?.available_date??assignmentAvaf}`
-  
-  
+    
     const [dueDate, setDueDate] = useState<Date | null>(new Date(convertDateString(due_date)));
     const [availableFrom, setAvailableFrom] = useState<Date | null>(new Date(convertDateString(available_date)));
     const [availableUntil, setAvailableUntil] = useState<Date | null>(new Date(convertDateString(from_date)));
     const { currentUser } = useSelector((state: any) => state.accountReducer);
     const dispatch = useDispatch()
-
-
-      useEffect(() => {
-        if (assignment._id !== 'TEMP') {
-            setassignmentName(assignment.title);
-            setassignmentDesc(assignment.description);
-            setassignmentPts(assignment.points);
-            setassignmentDue(assignment.due_date);
-            setassignmentAvaf(assignment.available_from);
-            setassignmentAvaU(assignment.available_date);
-          }
-       }, [assignments, setassignmentName, setassignmentDesc, setassignmentPts, setassignmentDue, setassignmentAvaf, setassignmentAvaU]);
     
+    const saveAssignment = async (assignment: any) => {
+      await assignmentsClient.updateAssignment(assignment);
+      dispatch(updateAssignment(assignment));
+    };
+  
+
+    useEffect(() => {
+      if (aid !== 'TEMP') {
+          setassignmentName(assignment.title);
+          setassignmentDesc(assignment.description);
+          setassignmentPts(assignment.points);
+          setassignmentDue(assignment.due_date);
+          setassignmentAvaf(assignment.available_from);
+          setassignmentAvaU(assignment.available_date);
+        }
+      }, [assignments, setassignmentName, setassignmentDesc, setassignmentPts, setassignmentDue, setassignmentAvaf, setassignmentAvaU]);
+  
 
     console.log({...assignment, title: assignmentName, description:assignmentDesc, points:assignmentPts, due_date:assignmentDue, available_from:assignmentAvaf, available_date:assignmentAvaU})
 
@@ -293,11 +297,10 @@ export default function AssignmentEditor( { assignmentName, setassignmentName,
           <Link to={`/Kanbas/Courses/${cid}/Assignments`}
             className="wd-editor-course-link text-decoration-none text-dark" >
             <button onClick={() => {
-                                    if (assignment._id === 'TEMP') {
+                                    if (aid === 'TEMP') {
                                       addAssignment();
                                     } else {
-                                      dispatch(
-                                        updateAssignment({
+                                      saveAssignment({
                                           ...assignment,
                                           title: assignmentName,
                                           description: assignmentDesc,
@@ -305,8 +308,7 @@ export default function AssignmentEditor( { assignmentName, setassignmentName,
                                           due_date: assignmentDue,
                                           available_from: assignmentAvaf,
                                           available_date: assignmentAvaU,
-                                        })
-                                      );
+                                        });
                                     }
 
                                     setassignmentName("New Assignment");
