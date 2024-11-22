@@ -48,6 +48,11 @@ export default function TOC() {
           My GitHub
         </a>
       </li>
+      <li className="nav-item">
+        <a id="wd-k" href="https://kanbas-node-server-app-lo-7660325f47b6.herokuapp.com/" className="nav-link">
+          My Heroku
+        </a>
+      </li>
     </ul>
   );
 }
