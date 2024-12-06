@@ -292,7 +292,7 @@ export default function AssignmentEditor( { assignmentName, setassignmentName,
           
 
           <hr/>
-          {currentUser.role === "FACULTY" && (
+          {(currentUser.role === "FACULTY" || currentUser.role === "ADMIN") && (
           <>
           <Link to={`/Kanbas/Courses/${cid}/Assignments`}
             className="wd-editor-course-link text-decoration-none text-dark" >
