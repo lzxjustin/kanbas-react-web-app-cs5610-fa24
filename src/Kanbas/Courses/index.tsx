@@ -18,7 +18,8 @@ export default function Courses({ courses }: { courses: any[]; }) {
     const { cid } = useParams();
     const { pathname } = useLocation();
     const course = courses.find((course) => course._id === cid);
-   
+    
+    const [users, setUsers] = useState([])
     const [assignmentName, setassignmentName] = useState("New Assignment");
     const [assignmentDesc, setassignmentDesc] = useState("This is a new assignment");
     const [assignmentPts, setassignmentPts] = useState("100");
@@ -29,11 +30,22 @@ export default function Courses({ courses }: { courses: any[]; }) {
     
     const createAssignmentForCourse = async () => {
       if (!cid) return;
-      const newAssignment = { title: assignmentName, course: cid, description:assignmentDesc, points:assignmentPts, due_date:assignmentDue, available_date:assignmentAvaf, until:assignmentAvaU };
+      const newAssignment = { title: assignmentName, course: cid, description:assignmentDesc, points:assignmentPts, due_date:assignmentDue, available_from:assignmentAvaf, available_date:assignmentAvaU, year:"2024" };
       const assignment = await coursesClient.createAssignmentForCourse(cid, newAssignment);
       console.log(assignment)
       dispatch(addAssignment(assignment));
     };
+
+    const fetchUsers = async () => {
+        if (!cid) return;
+        const users = await coursesClient.findUsersForCourse(cid);
+        console.log(users)
+        setUsers(users)
+    };
+
+    useEffect(() => {
+      fetchUsers();
+    }, []);
   
 
 
@@ -72,7 +84,7 @@ export default function Courses({ courses }: { courses: any[]; }) {
                             addAssignment = {createAssignmentForCourse}
                             
                              />} />
-                    <Route path="People" element={<PeopleTable />} />
+                    <Route path="People" element={<PeopleTable users = {users}/>} />
                 </Routes>
             </div>
           </div>

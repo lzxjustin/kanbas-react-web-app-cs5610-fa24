@@ -11,7 +11,7 @@ export default function ModulesControls({ moduleName, setModuleName, addModule }
     
     return (
     <div id="wd-modules-controls" className="text-nowrap me-4">
-      {currentUser.role === "FACULTY" && (
+      {(currentUser.role === "FACULTY" || currentUser.role === "ADMIN")  && (
       <>
         <button className="btn btn-lg btn-danger me-1 float-end" id="wd-add-module-btn"
           data-bs-toggle="modal" data-bs-target="#wd-add-module-dialog" >

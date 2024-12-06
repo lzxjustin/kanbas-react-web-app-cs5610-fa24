@@ -22,7 +22,6 @@ export default function Assignments({ assignmentName, setassignmentName }:
     const { assignments } = useSelector((state: any) => state.assignmentReducer);
     const { currentUser } = useSelector((state: any) => state.accountReducer);
     const [selectedAssignmentID, setSelectedAssignmentID] = useState("Null");
-
     const fetchAssignments = async () => {
       const assignments = await coursesClient.findAssignmentsForCourse(cid as string);
       dispatch(setAssignments(assignments));
@@ -53,7 +52,7 @@ export default function Assignments({ assignmentName, setassignmentName }:
               </div>
           </div>
 
-          {currentUser.role === "FACULTY" && (
+          {(currentUser.role === "FACULTY" || currentUser.role === "ADMIN")  && (
             <>
                 <div className="col-6">
                   <Link key= {`#/Kanbas/Courses/${cid}/Assignments/`} to= {`TEMP`} className="text-white fs-5 text-decoration-none">
@@ -98,7 +97,7 @@ export default function Assignments({ assignmentName, setassignmentName }:
                         <strong> Due </strong> {assignment.due_date} | {assignment.points} pts
                       </div>
 
-                      {currentUser.role === "FACULTY" && (
+                      {(currentUser.role === "FACULTY" || currentUser.role === "ADMIN")  && (
                         <>
                           <div className="col-auto">
                             <FaTrash className="text-danger me-2 mb-1" data-bs-toggle="modal" data-bs-target="#wd-delete-assignment-dialog" 

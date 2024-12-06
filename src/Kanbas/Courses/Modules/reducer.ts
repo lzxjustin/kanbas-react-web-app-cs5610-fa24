@@ -31,6 +31,7 @@ const modulesSlice = createSlice({
       ) as any;
     },
     editModule: (state, { payload: moduleId }) => {
+      console.log(moduleId);
       state.modules = state.modules.map((m: any) =>
         m._id === moduleId ? { ...m, editing: true } : m
       ) as any;
